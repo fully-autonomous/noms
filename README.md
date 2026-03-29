@@ -153,14 +153,11 @@ This fork is actively maintained with the following completed features:
 * ✅ **Remote Configuration** - Persistent remote configuration with add/remove/list
 * ✅ **Sync Operations** - Push and pull with remote servers
 * ✅ **Time Travel** - Browse and checkout historical versions
-* ✅ **Query System** - SQL-like query interface via `noms query`
+* ✅ **Query System** - SQL-like query interface via `noms query` for system tables
 * ✅ **Dataset Management** - Import, export, and manage structured datasets
-
-### In Progress
-
-* Garbage Collection for orphaned chunks
-* Migration tools for format upgrades
-* Query language improvements
+* ✅ **Garbage Collection** - Automatic cleanup of orphaned chunks with generational GC
+* ✅ **Migration Tools** - Schema and format migration with versioning support
+* ✅ **GraphQL API** - Full GraphQL query interface via ngql package
 
 <br>
 
