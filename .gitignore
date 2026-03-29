@@ -3,7 +3,11 @@ noms.iml
 *.swp
 .vscode
 .idea
+.claude
+.agents
+.agents
 .noms
 .nomsconfig
 .DS_Store
 node_modules
+docs
