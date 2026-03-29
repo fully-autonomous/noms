@@ -30,6 +30,7 @@ var kingpinCommands = []util.KingpinCommand{
 	nomsConfig,
 	nomsDiff,
 	nomsDs,
+	nomsGraphQL,
 	nomsInit,
 	nomsList,
 	nomsLog,
@@ -48,9 +49,8 @@ var kingpinCommands = []util.KingpinCommand{
 	nomsStatus,
 	nomsStruct,
 	nomsSync,
-	nomsTui,
-	splore.Cmd,
 	nomsVersion,
+	splore.Cmd,
 }
 
 var actions = []string{
