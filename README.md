@@ -157,7 +157,7 @@ This fork is actively maintained with the following completed features:
 * ✅ **Dataset Management** - Import, export, and manage structured datasets
 * ✅ **Garbage Collection** - Automatic cleanup of orphaned chunks with generational GC
 * ✅ **Migration Tools** - Schema and format migration with versioning support
-* ✅ **GraphQL API** - Full GraphQL query interface via ngql package
+* ✅ **GraphQL Library** - GraphQL type conversion and query support (ngql package for developers)
 
 <br>
 
