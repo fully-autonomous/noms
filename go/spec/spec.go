@@ -29,8 +29,25 @@ const Separator = "::"
 
 var datasetRe = regexp.MustCompile("^" + datas.DatasetRe.String() + "$")
 
+// GetAWSSession returns an AWS session for use with S3 and DynamoDB.
+// Credentials are loaded from the default credential chain:
+// - Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+// - Shared credentials file (~/.aws/credentials)
+// - EC2 Instance Metadata Service (IAM roles for EC2)
+//
+// The region is determined by (in order of precedence):
+// - AWS_REGION environment variable
+// - AWS_DEFAULT_REGION environment variable
+// - Default region "us-west-2" if none specified
 var GetAWSSession func() *session.Session = func() *session.Session {
-	return session.Must(session.NewSession(aws.NewConfig().WithRegion("us-west-2")))
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = os.Getenv("AWS_DEFAULT_REGION")
+	}
+	if region == "" {
+		region = "us-west-2"
+	}
+	return session.Must(session.NewSession(aws.NewConfig().WithRegion(region)))
 }
 
 type ProtocolImpl interface {
