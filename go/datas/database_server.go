@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/attic-labs/noms/go/chunks"
 	"github.com/attic-labs/noms/go/constants"
@@ -22,6 +23,33 @@ type connectionState struct {
 	cs http.ConnState
 }
 
+var allowedOrigins []string
+
+func SetAllowedOrigins(origins []string) {
+	allowedOrigins = origins
+}
+
+func isOriginAllowed(origin string) bool {
+	if len(allowedOrigins) == 0 {
+		return false
+	}
+	for _, allowed := range allowedOrigins {
+		if allowed == "*" {
+			return true
+		}
+		if strings.EqualFold(origin, allowed) {
+			return true
+		}
+		if strings.HasSuffix(allowed, ".*") {
+			domain := strings.TrimPrefix(allowed, "*")
+			if strings.HasSuffix(origin, domain) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 type RemoteDatabaseServer struct {
 	cs      chunks.ChunkStore
 	address string
@@ -29,8 +57,7 @@ type RemoteDatabaseServer struct {
 	l       *net.Listener
 	csChan  chan *connectionState
 	closing bool
-	// Called just before the server is started.
-	Ready func()
+	Ready   func()
 }
 
 func NewRemoteDatabaseServer(cs chunks.ChunkStore, address string, port int) *RemoteDatabaseServer {
@@ -39,7 +66,13 @@ func NewRemoteDatabaseServer(cs chunks.ChunkStore, address string, port int) *Re
 		d.Panic("SDK version %s is incompatible with data of version %s", constants.NomsVersion, dataVersion)
 	}
 	return &RemoteDatabaseServer{
-		cs, address, port, nil, make(chan *connectionState, 16), false, func() {},
+		cs:      cs,
+		address: address,
+		port:    port,
+		l:       nil,
+		csChan:  make(chan *connectionState, 16),
+		closing: false,
+		Ready:   func() {},
 	}
 }
 
@@ -123,13 +156,14 @@ func noopHandle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func corsHandle(f httprouter.Handle) httprouter.Handle {
-	// TODO: Implement full pre-flighting?
-	// See: http://www.html5rocks.com/static/images/cors_server_flowchart.png
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		// Can't use * when clients are using cookies.
-		w.Header().Add("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		w.Header().Add("Access-Control-Allow-Methods", "GET, POST")
-		w.Header().Add("Access-Control-Allow-Headers", "*")
+		origin := r.Header.Get("Origin")
+		if origin != "" && isOriginAllowed(origin) {
+			w.Header().Add("Access-Control-Allow-Origin", origin)
+			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Noms-Version")
+			w.Header().Add("Access-Control-Allow-Credentials", "true")
+		}
 		w.Header().Add("Access-Control-Expose-Headers", NomsVersionHeader)
 		w.Header().Add(NomsVersionHeader, constants.NomsVersion)
 		f(w, r, ps)
