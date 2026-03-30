@@ -39,8 +39,49 @@ export interface NomsError {
   error: string;
 }
 
-function isNomsError(obj: any): obj is NomsError {
-  return obj && obj.error;
+function isNomsError(obj: unknown): obj is NomsError {
+  return typeof obj === 'object' && obj !== null && 'error' in obj;
+}
+
+const SAFE_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const MAX_NAME_LENGTH = 256;
+
+function validateName(name: string, fieldName: string): void {
+  if (typeof name !== 'string') {
+    throw new Error(`${fieldName} must be a string`);
+  }
+  if (name.length === 0) {
+    throw new Error(`${fieldName} cannot be empty`);
+  }
+  if (name.length > MAX_NAME_LENGTH) {
+    throw new Error(`${fieldName} exceeds maximum length`);
+  }
+  if (!SAFE_NAME_PATTERN.test(name)) {
+    throw new Error(`${fieldName} contains invalid characters`);
+  }
+}
+
+function validateUrl(url: string): void {
+  if (typeof url !== 'string') {
+    throw new Error('URL must be a string');
+  }
+  if (url.length === 0) {
+    throw new Error('URL cannot be empty');
+  }
+  try {
+    new URL(url);
+  } catch {
+    throw new Error('Invalid URL format');
+  }
+}
+
+function validateMessage(message: string): void {
+  if (typeof message !== 'string') {
+    throw new Error('Message must be a string');
+  }
+  if (message.length > 10000) {
+    throw new Error('Message exceeds maximum length');
+  }
 }
 
 export async function runNoms(args: string[], format: 'text' | 'json' = 'json'): Promise<{ stdout: string; stderr: string; code: number }> {
@@ -127,38 +168,48 @@ export async function getRemotes(): Promise<Remote[]> {
 }
 
 export async function checkoutBranch(branchName: string, create: boolean = false): Promise<boolean> {
+  validateName(branchName, 'Branch name');
   const args = create ? ['checkout', '-b', branchName] : ['checkout', branchName];
   const result = await runNoms(args);
   return result.code === 0;
 }
 
 export async function createBranch(branchName: string): Promise<boolean> {
+  validateName(branchName, 'Branch name');
   const result = await runNoms(['branch', '-c', branchName]);
   return result.code === 0;
 }
 
 export async function deleteBranch(branchName: string): Promise<boolean> {
+  validateName(branchName, 'Branch name');
   const result = await runNoms(['branch', '-d', branchName]);
   return result.code === 0;
 }
 
 export async function addRemote(name: string, url: string): Promise<boolean> {
+  validateName(name, 'Remote name');
+  validateUrl(url);
   const result = await runNoms(['remote', '--add', name, url]);
   return result.code === 0;
 }
 
 export async function removeRemote(name: string): Promise<boolean> {
+  validateName(name, 'Remote name');
   const result = await runNoms(['remote', '--remove', name]);
   return result.code === 0;
 }
 
 export async function push(remote: string = 'origin', branch: string = ''): Promise<boolean> {
+  if (remote) validateName(remote, 'Remote name');
+  if (branch) validateName(branch, 'Branch name');
   const args = branch ? ['push', remote, branch] : ['push', remote];
   const result = await runNoms(args);
   return result.code === 0;
 }
 
 export async function pull(remote: string = 'origin', branch: string = ''): Promise<boolean> {
+  if (remote) validateName(remote, 'Remote name');
+  if (branch) validateName(branch, 'Branch name');
   const args = branch ? ['pull', remote, branch] : ['pull', remote];
   const result = await runNoms(args);
   return result.code === 0;
@@ -170,6 +221,9 @@ export async function init(): Promise<boolean> {
 }
 
 export async function commit(message: string, path: string, dataset: string): Promise<boolean> {
+  validateMessage(message);
+  validateName(path, 'Path');
+  validateName(dataset, 'Dataset');
   const result = await runNoms(['commit', '-m', message, path, dataset]);
   return result.code === 0;
 }
