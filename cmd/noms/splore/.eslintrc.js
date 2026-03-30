@@ -3,18 +3,26 @@
 // http://www.apache.org/licenses/LICENSE-2.0
 
 module.exports = {
-  parser: 'babel-eslint',
+  parser: '@babel/eslint-parser',
+  parserOptions: {
+    requireConfigFile: false,
+    babelOptions: {
+      presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-flow'],
+    },
+    ecmaVersion: 2023,
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
   rules: {
     'arrow-body-style': ['error', 'as-needed'],
     camelcase: 'error',
     eqeqeq: 'error',
-    'flowtype/boolean-style': 'error',
-    'flowtype/define-flow-type': 1,
-    'flowtype/use-flow-type': 1,
     'no-fallthrough': 'error',
     'no-new-wrappers': 'error',
     'no-throw-literal': 'error',
-    'no-unused-vars': ['error', {argsIgnorePattern: '^_$', varsIgnorePattern: '^_$'}],
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_$' }],
     'no-var': 'error',
     'prefer-arrow-callback': 'error',
     'prefer-const': 'error',
@@ -24,22 +32,24 @@ module.exports = {
     'react/jsx-no-undef': 'error',
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
+    'react/react-in-jsx-scope': 'off',
   },
   env: {
-    es6: true,
-    jest: true,
+    es2023: true,
+    browser: true,
   },
-  extends: 'eslint:recommended',
-  ecmaFeatures: {
-    jsx: true,
-    experimentalObjectRestSpread: true,
-  },
+  extends: ['eslint:recommended', 'plugin:react/recommended'],
   globals: {
-    'alert': true,
-    'console': true,
-    'document': true,
-    'fetch': true,
-    'window': true,
+    alert: 'readonly',
+    console: 'readonly',
+    document: 'readonly',
+    fetch: 'readonly',
+    window: 'readonly',
   },
   plugins: ['flowtype', 'react'],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
 };

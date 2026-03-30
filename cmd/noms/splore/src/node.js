@@ -23,9 +23,7 @@ type State = {
   y: number,
 };
 
-export default class Node extends Component<void, Props, State> {
-  state: State;
-
+export default class Node extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
 

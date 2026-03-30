@@ -5,7 +5,7 @@
 // @flow
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {notNull} from './assert.js';
 import {layout, TreeNode} from './buchheim.js';
 import Layout from './layout.js';
@@ -126,8 +126,8 @@ function render() {
 
   const dt = new TreeNode(data, rootId, null, 0, 0, {});
   layout(dt);
-  ReactDOM.render(
+  const root = createRoot(document.querySelector('#splore'));
+  root.render(
     <Layout tree={dt} data={data} onNodeClick={handleNodeClick} />,
-    document.querySelector('#splore'),
   );
 }

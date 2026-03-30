@@ -4,17 +4,27 @@
 
 'use strict';
 
-const webpack = require('webpack');
+const path = require('path');
 
-const devMode = process.env.NODE_ENV !== 'production';
+module.exports = (env, argv) => {
+  const devMode = argv.mode !== 'production';
 
-module.exports = {
-  module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: 'babel-loader',
-      exclude: /node_modules/,
-    }],
-  },
-  devtool: devMode ? '#inline-source-map' : '',
+  return {
+    mode: devMode ? 'development' : 'production',
+    entry: './src/main.js',
+    output: {
+      path: path.resolve(__dirname),
+      filename: 'out.js',
+    },
+    module: {
+      rules: [{
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+        },
+        exclude: /node_modules/,
+      }],
+    },
+    devtool: devMode ? 'inline-source-map' : false,
+  };
 };
